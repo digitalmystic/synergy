@@ -796,7 +796,11 @@ OSXKeyState::getGroups(GroupList& groups) const
 		bool addToGroups = true;
 		TISInputSourceRef keyboardLayout = 
 			(TISInputSourceRef)CFArrayGetValueAtIndex(kbds, i);
-
+		
+		// TODO: remove this debug logging
+		CFDataRef id = (CFDataRef)TISGetInputSourceProperty(keyboardLayout, kTISPropertyInputSourceID);
+		CFShow(id);
+		
 		if (addToGroups)
     		groups.push_back(keyboardLayout);
 	}
