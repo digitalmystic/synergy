@@ -606,6 +606,8 @@ KeyState::fakeKeyRepeat(
 	const synergy::KeyMap::KeyItem* keyItem =
 		m_keyMap.mapKey(keys, id, pollActiveGroup(), m_activeModifiers,
 								getActiveModifiersRValue(), mask, true);
+	LOG((CLOG_DEBUG "mapped key stroke array size: %d", keys.size()));
+	
 	if (keyItem == NULL) {
 		return false;
 	}

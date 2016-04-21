@@ -105,6 +105,9 @@ KeyMap::addKeyEntry(const KeyItem& item)
 
 	// add item list
 	entries.push_back(items);
+	if (item.m_id == 0x32) {
+		LOG((CLOG_DEBUG "add key: %04x %d %03x %04x (%04x %04x %04x)%s", newItem.m_id, newItem.m_group, newItem.m_button, newItem.m_client, newItem.m_required, newItem.m_sensitive, newItem.m_generates, newItem.m_dead ? " dead" : ""));
+	}
 	LOG((CLOG_DEBUG5 "add key: %04x %d %03x %04x (%04x %04x %04x)%s", newItem.m_id, newItem.m_group, newItem.m_button, newItem.m_client, newItem.m_required, newItem.m_sensitive, newItem.m_generates, newItem.m_dead ? " dead" : ""));
 }
 
@@ -264,7 +267,8 @@ KeyMap::mapKey(Keystrokes& keys, KeyID id, SInt32 group,
 				KeyModifierMask desiredMask,
 				bool isAutoRepeat) const
 {
-	LOG((CLOG_DEBUG1 "mapKey %04x (%d) with mask %04x, start state: %04x", id, id, desiredMask, currentState));
+	LOG((CLOG_DEBUG "mapKey %04x (%d) with mask %04x, start state: %04x in group: %04x",
+			id, id, desiredMask, currentState, group));
 
 	// handle group change
 	if (id == kKeyNextGroup) {
@@ -326,7 +330,7 @@ KeyMap::mapKey(Keystrokes& keys, KeyID id, SInt32 group,
 	}
 
 	if (item != NULL) {
-		LOG((CLOG_DEBUG1 "mapped to %03x, new state %04x", item->m_button, currentState));
+		LOG((CLOG_DEBUG "mapped to %03x, new state %04x", item->m_button, currentState));
 	}
 	return item;
 }
@@ -542,7 +546,7 @@ KeyMap::mapCommandKey(Keystrokes& keys, KeyID id, SInt32 group,
 			const KeyItem& item = entryList[i].back();
 			if ((item.m_required & KeyModifierShift & desiredMask) ==
 				(item.m_sensitive & KeyModifierShift & desiredMask)) {
-				LOG((CLOG_DEBUG1 "found key in group %d", effectiveGroup));
+				LOG((CLOG_DEBUG "found key in group %d", effectiveGroup));
 				keyItem = &item;
 				break;
 			}
@@ -606,7 +610,7 @@ KeyMap::mapCharacterKey(Keystrokes& keys, KeyID id, SInt32 group,
 	KeyIDMap::const_iterator i = m_keyIDMap.find(id);
 	if (i == m_keyIDMap.end()) {
 		// unknown key
-		LOG((CLOG_DEBUG1 "key %04x is not on keyboard", id));
+		LOG((CLOG_DEBUG "key %04x is not on keyboard", id));
 		return NULL;
 	}
 	const KeyGroupTable& keyGroupTable = i->second;
@@ -615,19 +619,19 @@ KeyMap::mapCharacterKey(Keystrokes& keys, KeyID id, SInt32 group,
 	SInt32 keyIndex  = -1;
 	SInt32 numGroups = getNumGroups();
 	SInt32 groupOffset;
-	LOG((CLOG_DEBUG1 "find best:  %04x %04x", currentState, desiredMask));
+	LOG((CLOG_DEBUG "find best:  %04x %04x", currentState, desiredMask));
 	for (groupOffset = 0; groupOffset < numGroups; ++groupOffset) {
 		SInt32 effectiveGroup = getEffectiveGroup(group, groupOffset);
 		keyIndex = findBestKey(keyGroupTable[effectiveGroup],
 								currentState, desiredMask);
 		if (keyIndex != -1) {
-			LOG((CLOG_DEBUG1 "found key in group %d", effectiveGroup));
+			LOG((CLOG_DEBUG "found key in group %d", effectiveGroup));
 			break;
 		}
 	}
 	if (keyIndex == -1) {
 		// no mapping for this keysym
-		LOG((CLOG_DEBUG1 "no mapping for key %04x", id));
+		LOG((CLOG_DEBUG "no mapping for key %04x", id));
 		return NULL;
 	}
 
@@ -696,7 +700,7 @@ KeyMap::findBestKey(const KeyEntryList& entryList,
 		const KeyItem& item = entryList[i].back();
 		if ((item.m_required & desiredState) ==
 			(item.m_sensitive & desiredState)) {
-			LOG((CLOG_DEBUG1 "best key index %d of %d (exact)", i, entryList.size()));
+			LOG((CLOG_DEBUG "best key index %d of %d (exact)", i, entryList.size()));
 			return i;
 		}
 	}
@@ -715,7 +719,7 @@ KeyMap::findBestKey(const KeyEntryList& entryList,
 		}
 	}
 	if (bestIndex != -1) {
-		LOG((CLOG_DEBUG1 "best key index %d of %d (%d modifiers)", bestIndex, entryList.size(), bestCount));
+		LOG((CLOG_DEBUG "best key index %d of %d (%d modifiers)", bestIndex, entryList.size(), bestCount));
 	}
 
 	return bestIndex;
