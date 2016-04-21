@@ -105,7 +105,7 @@ KeyMap::addKeyEntry(const KeyItem& item)
 
 	// add item list
 	entries.push_back(items);
-	if (item.m_id == 0x32) {
+	if (item.m_id == 0x20) {
 		LOG((CLOG_DEBUG "add key: %04x %d %03x %04x (%04x %04x %04x)%s", newItem.m_id, newItem.m_group, newItem.m_button, newItem.m_client, newItem.m_required, newItem.m_sensitive, newItem.m_generates, newItem.m_dead ? " dead" : ""));
 	}
 	LOG((CLOG_DEBUG5 "add key: %04x %d %03x %04x (%04x %04x %04x)%s", newItem.m_id, newItem.m_group, newItem.m_button, newItem.m_client, newItem.m_required, newItem.m_sensitive, newItem.m_generates, newItem.m_dead ? " dead" : ""));

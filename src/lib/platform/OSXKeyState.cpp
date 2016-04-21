@@ -429,15 +429,17 @@ OSXKeyState::getKeyMap(synergy::KeyMap& keyMap)
 		// try uchr resource first
 		CFDataRef resourceRef = (CFDataRef)TISGetInputSourceProperty(
 			m_groups[g], kTISPropertyUnicodeKeyLayoutData);
-
+		
+		
 		layoutValid = resourceRef != NULL;
-		if (layoutValid)
-			resource = CFDataGetBytePtr(resourceRef);
-
 		if (layoutValid) {
+			resource = CFDataGetBytePtr(resourceRef);
+			
 			UchrKeyResource uchr(resource, keyboardType);
 			if (uchr.isValid()) {
-				LOG((CLOG_DEBUG1 "using uchr resource for group %d", g));
+				LOG((CLOG_DEBUG "using uchr resource for group %d", g));
+				CFDataRef id = (CFDataRef)TISGetInputSourceProperty(m_groups[g], kTISPropertyInputSourceID);
+				CFShow(id);
 				getKeyMap(keyMap, g, uchr);
 				continue;
 			}
