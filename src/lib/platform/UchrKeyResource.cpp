@@ -16,6 +16,7 @@
  */
 
 #include "platform/UchrKeyResource.h"
+#include "base/Log.h"
 
 #include <Carbon/Carbon.h>
 
@@ -43,6 +44,7 @@ UchrKeyResource::UchrKeyResource(const void* resource,
 		if (keyboardType >= r->keyboardTypeList[i].keyboardTypeFirst &&
 			keyboardType <= r->keyboardTypeList[i].keyboardTypeLast) {
 			th = r->keyboardTypeList + i;
+			LOG((CLOG_DEBUG "Uchr uses %d keyboard type list", i));
 			break;
 		}
 		if (r->keyboardTypeList[i].keyboardTypeFirst == 0) {
@@ -138,7 +140,7 @@ UchrKeyResource::getKey(UInt32 table, UInt32 button) const
 	const UCKeyOutput* cPtr = reinterpret_cast<const UCKeyOutput*>(base +
 								m_cti->keyToCharTableOffsets[table]);
 
-  const UCKeyOutput c = cPtr[button];
+	const UCKeyOutput c = cPtr[button];
 
 	KeySequence keys;
 	switch (c & kUCKeyOutputTestForIndexMask) {

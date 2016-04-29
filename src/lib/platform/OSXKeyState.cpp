@@ -435,7 +435,7 @@ OSXKeyState::getKeyMap(synergy::KeyMap& keyMap)
 		layoutValid = resourceRef != NULL;
 		if (layoutValid) {
 			resource = CFDataGetBytePtr(resourceRef);
-			
+
 			UchrKeyResource uchr(resource, keyboardType);
 			if (uchr.isValid()) {
 				LOG((CLOG_DEBUG "using uchr resource for group %d", g));
@@ -446,7 +446,7 @@ OSXKeyState::getKeyMap(synergy::KeyMap& keyMap)
 			}
 		}
 
-		LOG((CLOG_DEBUG1 "no keyboard resource for group %d", g));
+		LOG((CLOG_DEBUG "no keyboard resource for group %d", g));
 	}
 }
 
@@ -687,6 +687,9 @@ OSXKeyState::getKeyMap(synergy::KeyMap& keyMap,
 			for (std::set<UInt32>::iterator k = required.begin();
 											k != required.end(); ++k) {
 				item.m_required = mapModifiersFromOSX(*k << 8);
+				if (item.m_id == 0x20) {
+					LOG((CLOG_DEBUG "addKeyEntry button:%d, required:%x, group: %d, i:%d, j:%d",item.m_button, item.m_required, group, i, j));
+				}
 				keyMap.addKeyEntry(item);
 			}
 		}
