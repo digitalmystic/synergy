@@ -687,9 +687,9 @@ OSXKeyState::getKeyMap(synergy::KeyMap& keyMap,
 			for (std::set<UInt32>::iterator k = required.begin();
 											k != required.end(); ++k) {
 				item.m_required = mapModifiersFromOSX(*k << 8);
-				if (item.m_id == 0x20) {
-					LOG((CLOG_DEBUG "addKeyEntry button:%d, required:%x, group: %d, i:%d, j:%d",item.m_button, item.m_required, group, i, j));
-				}
+				
+				LOG((CLOG_DEBUG "addKeyEntry button:%d, required:%x, group: %d, i:%d, j:%d",item.m_button, item.m_required, group, i, j));
+				
 				keyMap.addKeyEntry(item);
 			}
 		}
