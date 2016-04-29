@@ -832,7 +832,7 @@ KeyState::fakeKeys(const Keystrokes& keys, UInt32 count)
 	}
 
 	// generate key events
-	LOG((CLOG_DEBUG1 "keystrokes:"));
+	LOG((CLOG_DEBUG "keystrokes:"));
 	for (Keystrokes::const_iterator k = keys.begin(); k != keys.end(); ) {
 		if (k->m_type == Keystroke::kButton && k->m_data.m_button.m_repeat) {
 			// repeat from here up to but not including the next key

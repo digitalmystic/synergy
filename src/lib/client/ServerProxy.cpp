@@ -647,7 +647,7 @@ ServerProxy::keyUp()
 	// parse
 	UInt16 id, mask, button;
 	ProtocolUtil::readf(m_stream, kMsgDKeyUp + 4, &id, &mask, &button);
-	LOG((CLOG_DEBUG1 "recv key up id=0x%08x, mask=0x%04x, button=0x%04x", id, mask, button));
+	LOG((CLOG_DEBUG "recv key up id=0x%08x, mask=0x%04x, button=0x%04x", id, mask, button));
 
 	// translate
 	KeyID id2             = translateKey(static_cast<KeyID>(id));

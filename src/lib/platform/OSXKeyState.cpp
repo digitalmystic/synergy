@@ -462,7 +462,7 @@ OSXKeyState::fakeKey(const Keystroke& keystroke)
 		CGEventSourceRef source = 0;
 		CGKeyCode virtualKey = mapKeyButtonToVirtualKey(button);
 		
-		LOG((CLOG_DEBUG1
+		LOG((CLOG_DEBUG
 			"  button=0x%04x virtualKey=0x%04x keyDown=%s client=0x%04x",
 			button, virtualKey, keyDown ? "down" : "up", client));
 
