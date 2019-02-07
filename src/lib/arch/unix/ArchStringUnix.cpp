@@ -1,6 +1,6 @@
 /*
  * synergy -- mouse and keyboard sharing utility
- * Copyright (C) 2012 Synergy Si Ltd.
+ * Copyright (C) 2012-2016 Symless Ltd.
  * Copyright (C) 2002 Chris Schoeneman
  * 
  * This package is free software; you can redistribute it and/or
@@ -18,7 +18,7 @@
 
 #include "arch/unix/ArchStringUnix.h"
 
-#include <stdio.h>
+#include <cstdio>
 
 //
 // ArchStringUnix
@@ -28,15 +28,13 @@
 #include "arch/vsnprintf.h"
 
 ArchStringUnix::ArchStringUnix()
-{
-}
+= default;
 
 ArchStringUnix::~ArchStringUnix()
-{
-}
+= default;
 
 IArchString::EWideCharEncoding
 ArchStringUnix::getWideCharEncoding()
 {
-	return kUCS4;
+    return kUCS4;
 }

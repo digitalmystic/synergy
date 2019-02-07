@@ -1,6 +1,6 @@
 /*
  * synergy -- mouse and keyboard sharing utility
- * Copyright (C) 2012 Synergy Si Ltd.
+ * Copyright (C) 2012-2016 Symless Ltd.
  * Copyright (C) 2002 Chris Schoeneman
  * 
  * This package is free software; you can redistribute it and/or
@@ -17,63 +17,35 @@
  */
 
 #include "net/TCPSocketFactory.h"
-
-#include "net/TCPSocket.h"
-#include "net/TCPListenSocket.h"
 #include "arch/Arch.h"
-#include "common/PluginVersion.h"
 #include "base/Log.h"
+#include "net/TCPListenSocket.h"
+#include "net/TCPSocket.h"
 
 //
 // TCPSocketFactory
 //
 
 TCPSocketFactory::TCPSocketFactory(IEventQueue* events, SocketMultiplexer* socketMultiplexer) :
-	m_events(events),
-	m_socketMultiplexer(socketMultiplexer)
+    m_events(events),
+    m_socketMultiplexer(socketMultiplexer)
 {
-	// do nothing
+    // do nothing
 }
 
 TCPSocketFactory::~TCPSocketFactory()
 {
-	// do nothing
+    // do nothing
 }
 
 IDataSocket*
-TCPSocketFactory::create(bool secure) const
+TCPSocketFactory::create(IArchNetwork::EAddressFamily family) const
 {
-	IDataSocket* socket = NULL;
-	if (secure) {
-		void* args[2] = {
-			m_events,
-			m_socketMultiplexer
-		};
-		socket = static_cast<IDataSocket*>(
-			ARCH->plugin().invoke(s_pluginNames[kSecureSocket], "getSocket", args));
-	}
-	else {
-		socket = new TCPSocket(m_events, m_socketMultiplexer);
-	}
-
-	return socket;
+    return new TCPSocket(m_events, m_socketMultiplexer, family);
 }
 
 IListenSocket*
-TCPSocketFactory::createListen(bool secure) const
+TCPSocketFactory::createListen(IArchNetwork::EAddressFamily family) const
 {
-	IListenSocket* socket = NULL;
-	if (secure) {
-		void* args[2] = {
-			m_events,
-			m_socketMultiplexer
-		};
-		socket = static_cast<IListenSocket*>(
-			ARCH->plugin().invoke(s_pluginNames[kSecureSocket], "getListenSocket", args));
-	}
-	else {
-		socket = new TCPListenSocket(m_events, m_socketMultiplexer);
-	}
-
-	return socket;
+    return new TCPListenSocket(m_events, m_socketMultiplexer, family);
 }

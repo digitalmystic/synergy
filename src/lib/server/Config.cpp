@@ -1,6 +1,6 @@
 /*
  * synergy -- mouse and keyboard sharing utility
- * Copyright (C) 2012 Synergy Si Ltd.
+ * Copyright (C) 2012-2016 Symless Ltd.
  * Copyright (C) 2002 Chris Schoeneman
  * 
  * This package is free software; you can redistribute it and/or
@@ -18,13 +18,13 @@
 
 #include "server/Config.h"
 
-#include "server/Server.h"
-#include "synergy/KeyMap.h"
-#include "synergy/key_types.h"
-#include "net/XSocket.h"
 #include "base/IEventQueue.h"
 #include "common/stdistream.h"
 #include "common/stdostream.h"
+#include "core/KeyMap.h"
+#include "core/key_types.h"
+#include "net/XSocket.h"
+#include "server/Server.h"
 
 #include <cstdlib>
 
@@ -70,7 +70,7 @@ Config::renameScreen(const String& oldName,
 {
 	// get canonical name and find cell
 	String oldCanonical = getCanonicalName(oldName);
-	CellMap::iterator index = m_map.find(oldCanonical);
+	auto index = m_map.find(oldCanonical);
 	if (index == m_map.end()) {
 		return false;
 	}
@@ -99,11 +99,10 @@ Config::renameScreen(const String& oldName,
 
 	// update alias targets
 	if (CaselessCmp::equal(oldName, oldCanonical)) {
-		for (NameMap::iterator iter = m_nameToCanonicalName.begin();
-							iter != m_nameToCanonicalName.end(); ++iter) {
+		for (auto & iter : m_nameToCanonicalName) {
 			if (CaselessCmp::equal(
-							iter->second, oldCanonical)) {
-				iter->second = newName;
+							iter.second, oldCanonical)) {
+				iter.second = newName;
 			}
 		}
 	}
@@ -116,7 +115,7 @@ Config::removeScreen(const String& name)
 {
 	// get canonical name and find cell
 	String canonical = getCanonicalName(name);
-	CellMap::iterator index = m_map.find(canonical);
+	auto index = m_map.find(canonical);
 	if (index == m_map.end()) {
 		return;
 	}
@@ -131,7 +130,7 @@ Config::removeScreen(const String& name)
 	}
 
 	// remove aliases (and canonical name)
-	for (NameMap::iterator iter = m_nameToCanonicalName.begin();
+	for (auto iter = m_nameToCanonicalName.begin();
 								iter != m_nameToCanonicalName.end(); ) {
 		if (iter->second == canonical) {
 			m_nameToCanonicalName.erase(iter++);
@@ -177,7 +176,7 @@ Config::removeAlias(const String& alias)
 	}
 
 	// find alias
-	NameMap::iterator index = m_nameToCanonicalName.find(alias);
+	auto index = m_nameToCanonicalName.find(alias);
 	if (index == m_nameToCanonicalName.end()) {
 		return false;
 	}
@@ -197,7 +196,7 @@ Config::removeAliases(const String& canonical)
 	}
 
 	// find and removing matching aliases
-	for (NameMap::iterator index = m_nameToCanonicalName.begin();
+	for (auto index = m_nameToCanonicalName.begin();
 							index != m_nameToCanonicalName.end(); ) {
 		if (index->second == canonical && index->first != canonical) {
 			m_nameToCanonicalName.erase(index++);
@@ -217,10 +216,9 @@ Config::removeAllAliases()
 	m_nameToCanonicalName.clear();
 
 	// put the canonical names back in
-	for (CellMap::iterator index = m_map.begin();
-								index != m_map.end(); ++index) {
+	for (auto & index : m_map) {
 		m_nameToCanonicalName.insert(
-								std::make_pair(index->first, index->first));
+								std::make_pair(index.first, index.first));
 	}
 }
 
@@ -234,7 +232,7 @@ Config::connect(const String& srcName,
 	assert(srcSide >= kFirstDirection && srcSide <= kLastDirection);
 
 	// find source cell
-	CellMap::iterator index = m_map.find(getCanonicalName(srcName));
+	auto index = m_map.find(getCanonicalName(srcName));
 	if (index == m_map.end()) {
 		return false;
 	}
@@ -251,7 +249,7 @@ Config::disconnect(const String& srcName, EDirection srcSide)
 	assert(srcSide >= kFirstDirection && srcSide <= kLastDirection);
 
 	// find source cell
-	CellMap::iterator index = m_map.find(srcName);
+	auto index = m_map.find(srcName);
 	if (index == m_map.end()) {
 		return false;
 	}
@@ -268,7 +266,7 @@ Config::disconnect(const String& srcName, EDirection srcSide, float position)
 	assert(srcSide >= kFirstDirection && srcSide <= kLastDirection);
 
 	// find source cell
-	CellMap::iterator index = m_map.find(srcName);
+	auto index = m_map.find(srcName);
 	if (index == m_map.end()) {
 		return false;
 	}
@@ -289,17 +287,17 @@ bool
 Config::addOption(const String& name, OptionID option, OptionValue value)
 {
 	// find options
-	ScreenOptions* options = NULL;
+	ScreenOptions* options = nullptr;
 	if (name.empty()) {
 		options = &m_globalOptions;
 	}
 	else {
-		CellMap::iterator index = m_map.find(name);
+		auto index = m_map.find(name);
 		if (index != m_map.end()) {
 			options = &index->second.m_options;
 		}
 	}
-	if (options == NULL) {
+	if (options == nullptr) {
 		return false;
 	}
 
@@ -312,17 +310,17 @@ bool
 Config::removeOption(const String& name, OptionID option)
 {
 	// find options
-	ScreenOptions* options = NULL;
+	ScreenOptions* options = nullptr;
 	if (name.empty()) {
 		options = &m_globalOptions;
 	}
 	else {
-		CellMap::iterator index = m_map.find(name);
+		auto index = m_map.find(name);
 		if (index != m_map.end()) {
 			options = &index->second.m_options;
 		}
 	}
-	if (options == NULL) {
+	if (options == nullptr) {
 		return false;
 	}
 
@@ -335,17 +333,17 @@ bool
 Config::removeOptions(const String& name)
 {
 	// find options
-	ScreenOptions* options = NULL;
+	ScreenOptions* options = nullptr;
 	if (name.empty()) {
 		options = &m_globalOptions;
 	}
 	else {
-		CellMap::iterator index = m_map.find(name);
+		auto index = m_map.find(name);
 		if (index != m_map.end()) {
 			options = &index->second.m_options;
 		}
 	}
-	if (options == NULL) {
+	if (options == nullptr) {
 		return false;
 	}
 
@@ -389,14 +387,14 @@ Config::isValidScreenName(const String& name) const
 		}
 
 		// check first and last characters
-		if (!(isalnum(name[b]) || name[b] == '_') ||
-			!(isalnum(name[e - 1]) || name[e - 1] == '_')) {
+		if (!((isalnum(name[b]) != 0) || name[b] == '_') ||
+			!((isalnum(name[e - 1]) != 0) || name[e - 1] == '_')) {
 			return false;
 		}
 
 		// check interior characters
 		for (String::size_type i = b; i < e; ++i) {
-			if (!isalnum(name[i]) && name[i] != '_' && name[i] != '-') {
+			if ((isalnum(name[i]) == 0) && name[i] != '_' && name[i] != '-') {
 				return false;
 			}
 		}
@@ -452,13 +450,13 @@ Config::isCanonicalName(const String& name) const
 String
 Config::getCanonicalName(const String& name) const
 {
-	NameMap::const_iterator index = m_nameToCanonicalName.find(name);
+	auto index = m_nameToCanonicalName.find(name);
 	if (index == m_nameToCanonicalName.end()) {
 		return String();
 	}
-	else {
+	
 		return index->second;
-	}
+	
 }
 
 String
@@ -468,7 +466,7 @@ Config::getNeighbor(const String& srcName, EDirection srcSide,
 	assert(srcSide >= kFirstDirection && srcSide <= kLastDirection);
 
 	// find source cell
-	CellMap::const_iterator index = m_map.find(getCanonicalName(srcName));
+	auto index = m_map.find(getCanonicalName(srcName));
 	if (index == m_map.end()) {
 		return String();
 	}
@@ -479,16 +477,16 @@ Config::getNeighbor(const String& srcName, EDirection srcSide,
 		// no neighbor
 		return "";
 	}
-	else {
+	
 		// compute position on neighbor
-		if (positionOut != NULL) {
+		if (positionOut != nullptr) {
 			*positionOut =
 				dstEdge->inverseTransform(srcEdge->transform(position));
 		}
 
 		// return neighbor's name
 		return getCanonicalName(dstEdge->getName());
-	}
+	
 }
 
 bool
@@ -504,7 +502,7 @@ Config::hasNeighbor(const String& srcName, EDirection srcSide,
 	assert(srcSide >= kFirstDirection && srcSide <= kLastDirection);
 
 	// find source cell
-	CellMap::const_iterator index = m_map.find(getCanonicalName(srcName));
+	auto index = m_map.find(getCanonicalName(srcName));
 	if (index == m_map.end()) {
 		return false;
 	}
@@ -515,7 +513,7 @@ Config::hasNeighbor(const String& srcName, EDirection srcSide,
 Config::link_const_iterator
 Config::beginNeighbor(const String& srcName) const
 {
-	CellMap::const_iterator index = m_map.find(getCanonicalName(srcName));
+	auto index = m_map.find(getCanonicalName(srcName));
 	assert(index != m_map.end());
 	return index->second.begin();
 }
@@ -523,7 +521,7 @@ Config::beginNeighbor(const String& srcName) const
 Config::link_const_iterator
 Config::endNeighbor(const String& srcName) const
 {
-	CellMap::const_iterator index = m_map.find(getCanonicalName(srcName));
+	auto index = m_map.find(getCanonicalName(srcName));
 	assert(index != m_map.end());
 	return index->second.end();
 }
@@ -538,12 +536,12 @@ const Config::ScreenOptions*
 Config::getOptions(const String& name) const
 {
 	// find options
-	const ScreenOptions* options = NULL;
+	const ScreenOptions* options = nullptr;
 	if (name.empty()) {
 		options = &m_globalOptions;
 	}
 	else {
-		CellMap::const_iterator index = m_map.find(name);
+		auto index = m_map.find(name);
 		if (index != m_map.end()) {
 			options = &index->second.m_options;
 		}
@@ -577,7 +575,7 @@ Config::operator==(const Config& x) const
 		return false;
 	}
 
-	for (CellMap::const_iterator index1 = m_map.begin(),
+	for (auto index1 = m_map.begin(),
 								index2 = x.m_map.begin();
 								index1 != m_map.end(); ++index1, ++index2) {
 		// compare names
@@ -591,7 +589,7 @@ Config::operator==(const Config& x) const
 		}
 	}
 
-	for (NameMap::const_iterator index1 = m_nameToCanonicalName.begin(),
+	for (auto index1 = m_nameToCanonicalName.begin(),
 								index2 = x.m_nameToCanonicalName.begin();
 								index1 != m_nameToCanonicalName.end();
 								++index1, ++index2) {
@@ -602,11 +600,7 @@ Config::operator==(const Config& x) const
 	}
 
 	// compare input filters
-	if (m_inputFilter != x.m_inputFilter) {
-		return false;
-	}
-
-	return true;
+	return m_inputFilter == x.m_inputFilter;
 }
 
 bool
@@ -647,8 +641,8 @@ Config::formatInterval(const Interval& x)
 	if (x.first == 0.0f && x.second == 1.0f) {
 		return "";
 	}
-	return synergy::string::sprintf("(%d,%d)", (int)(x.first * 100.0f + 0.5f),
-										(int)(x.second * 100.0f + 0.5f));
+	return synergy::string::sprintf("(%d,%d)", static_cast<int>(x.first * 100.0f + 0.5f),
+										static_cast<int>(x.second * 100.0f + 0.5f));
 }
 
 void
@@ -765,6 +759,15 @@ Config::readSectionOptions(ConfigReadContext& s)
 		else if (name == "win32KeepForeground") {
 			addOption("", kOptionWin32KeepForeground, s.parseBoolean(value));
 		}
+		else if (name == "disableLockToScreen") {
+			addOption("", kOptionDisableLockToScreen, s.parseBoolean(value));
+		}
+		else if (name == "clipboardSharing") {
+			addOption("", kOptionClipboardSharing, s.parseBoolean(value));
+		}
+		else if (name == "clipboardSharingSize") {
+			addOption("", kOptionClipboardSharingSize, s.parseInt(value));
+		}
 		else {
 			handled = false;
 		}
@@ -772,7 +775,7 @@ Config::readSectionOptions(ConfigReadContext& s)
 		if (handled) {
 			// make sure handled options aren't followed by more values
 			if (i < line.size() && (line[i] == ',' || line[i] == ';')) {
-				throw XConfigRead(s, "to many arguments to %s", name.c_str());
+				throw XConfigRead(s, "to many arguments to %s", name);
 			}
 		}
 		else {
@@ -1096,7 +1099,7 @@ Config::parseAction(ConfigReadContext& s,
 	InputFilter::Action* action;
 
 	if (name == "keystroke" || name == "keyDown" || name == "keyUp") {
-		if (args.size() < 1 || args.size() > 2) {
+		if (args.empty() || args.size() > 2) {
 			throw XConfigRead(s, "syntax for action: keystroke(modifiers+key[,screens])");
 		}
 
@@ -1239,7 +1242,7 @@ Config::parseAction(ConfigReadContext& s,
 
 		InputFilter::KeyboardBroadcastAction::Mode mode =
 			InputFilter::KeyboardBroadcastAction::kToggle;
-		if (args.size() >= 1) {
+		if (!args.empty()) {
 			if (args[0] == "off") {
 				mode = InputFilter::KeyboardBroadcastAction::kOff;
 			}
@@ -1376,6 +1379,15 @@ Config::getOptionName(OptionID id)
 	if (id == kOptionScreenPreserveFocus) {
 		return "preserveFocus";
 	}
+	if (id == kOptionDisableLockToScreen) {
+		return "disableLockToScreen";
+	}
+	if (id == kOptionClipboardSharing) {
+		return "clipboardSharing";
+	}
+	if (id == kOptionClipboardSharingSize) {
+		return "clipboardSharingSize";
+	}
 	return NULL;
 }
 
@@ -1392,7 +1404,9 @@ Config::getOptionValue(OptionID id, OptionValue value)
 		id == kOptionXTestXineramaUnaware ||
 		id == kOptionRelativeMouseMoves ||
 		id == kOptionWin32KeepForeground ||
-		id == kOptionScreenPreserveFocus) {
+		id == kOptionScreenPreserveFocus ||
+		id == kOptionClipboardSharing ||
+		id == kOptionClipboardSharingSize) {
 		return (value != 0) ? "true" : "false";
 	}
 	if (id == kOptionModifierMapForShift ||
@@ -1577,7 +1591,7 @@ Config::CellEdge::operator<(const CellEdge& o) const
 	if (static_cast<int>(m_side) < static_cast<int>(o.m_side)) {
 		return true;
 	}
-	else if (static_cast<int>(m_side) > static_cast<int>(o.m_side)) {
+	if (static_cast<int>(m_side) > static_cast<int>(o.m_side)) {
 		return false;
 	}
 
@@ -1618,7 +1632,7 @@ Config::Cell::add(const CellEdge& src, const CellEdge& dst)
 void
 Config::Cell::remove(EDirection side)
 {
-	for (EdgeLinks::iterator j = m_neighbors.begin();
+	for (auto j = m_neighbors.begin();
 							j != m_neighbors.end(); ) {
 		if (j->first.getSide() == side) {
 			m_neighbors.erase(j++);
@@ -1632,7 +1646,7 @@ Config::Cell::remove(EDirection side)
 void
 Config::Cell::remove(EDirection side, float position)
 {
-	for (EdgeLinks::iterator j = m_neighbors.begin();
+	for (auto j = m_neighbors.begin();
 							j != m_neighbors.end(); ++j) {
 		if (j->first.getSide() == side && j->first.isInside(position)) {
 			m_neighbors.erase(j);
@@ -1643,7 +1657,7 @@ Config::Cell::remove(EDirection side, float position)
 void
 Config::Cell::remove(const Name& name)
 {
-	for (EdgeLinks::iterator j = m_neighbors.begin();
+	for (auto j = m_neighbors.begin();
 							j != m_neighbors.end(); ) {
 		if (name == j->second.getName()) {
 			m_neighbors.erase(j++);
@@ -1657,10 +1671,9 @@ Config::Cell::remove(const Name& name)
 void
 Config::Cell::rename(const Name& oldName, const String& newName)
 {
-	for (EdgeLinks::iterator j = m_neighbors.begin();
-							j != m_neighbors.end(); ++j) {
-		if (oldName == j->second.getName()) {
-			j->second.setName(newName);
+	for (auto & m_neighbor : m_neighbors) {
+		if (oldName == m_neighbor.second.getName()) {
+			m_neighbor.second.setName(newName);
 		}
 	}
 }
@@ -1668,14 +1681,14 @@ Config::Cell::rename(const Name& oldName, const String& newName)
 bool
 Config::Cell::hasEdge(const CellEdge& edge) const
 {
-	EdgeLinks::const_iterator i = m_neighbors.find(edge);
+	auto i = m_neighbors.find(edge);
 	return (i != m_neighbors.end() && i->first == edge);
 }
 
 bool
 Config::Cell::overlaps(const CellEdge& edge) const
 {
-	EdgeLinks::const_iterator i = m_neighbors.upper_bound(edge);
+	auto i = m_neighbors.upper_bound(edge);
 	if (i != m_neighbors.end() && i->first.overlaps(edge)) {
 		return true;
 	}
@@ -1690,7 +1703,7 @@ Config::Cell::getLink(EDirection side, float position,
 				const CellEdge*& src, const CellEdge*& dst) const
 {
 	CellEdge edge(side, position);
-	EdgeLinks::const_iterator i = m_neighbors.upper_bound(edge);
+	auto i = m_neighbors.upper_bound(edge);
 	if (i == m_neighbors.begin()) {
 		return false;
 	}
@@ -1715,7 +1728,7 @@ Config::Cell::operator==(const Cell& x) const
 	if (m_neighbors.size() != x.m_neighbors.size()) {
 		return false;
 	}
-	for (EdgeLinks::const_iterator index1 = m_neighbors.begin(),
+	for (auto index1 = m_neighbors.begin(),
 								index2 = x.m_neighbors.begin();
 								index1 != m_neighbors.end();
 								++index1, ++index2) {
@@ -1776,14 +1789,12 @@ operator<<(std::ostream& s, const Config& config)
 								screen != config.end(); ++screen) {
 		s << "\t" << screen->c_str() << ":" << std::endl;
 		const Config::ScreenOptions* options = config.getOptions(*screen);
-		if (options != NULL && options->size() > 0) {
-			for (Config::ScreenOptions::const_iterator
-								option  = options->begin();
-								option != options->end(); ++option) {
-				const char* name = Config::getOptionName(option->first);
-				String value    = Config::getOptionValue(option->first,
-															option->second);
-				if (name != NULL && !value.empty()) {
+		if (options != nullptr && !options->empty()) {
+			for (auto option : *options) {
+				const char* name = Config::getOptionName(option.first);
+				String value    = Config::getOptionValue(option.first,
+															option.second);
+				if (name != nullptr && !value.empty()) {
 					s << "\t\t" << name << " = " << value << std::endl;
 				}
 			}
@@ -1798,7 +1809,7 @@ operator<<(std::ostream& s, const Config& config)
 								screen != config.end(); ++screen) {
 		s << "\t" << screen->c_str() << ":" << std::endl;
 
-		for (Config::link_const_iterator
+		for (auto
 				link = config.beginNeighbor(*screen),
 				nend = config.endNeighbor(*screen); link != nend; ++link) {			
 			s << "\t\t" << Config::dirName(link->first.getSide()) <<
@@ -1816,12 +1827,9 @@ operator<<(std::ostream& s, const Config& config)
 		typedef std::multimap<String, String,
 								CaselessCmp> CMNameMap;
 		CMNameMap aliases;
-		for (Config::NameMap::const_iterator
-								index = config.m_nameToCanonicalName.begin();
-								index != config.m_nameToCanonicalName.end();
-								++index) {
-			if (index->first != index->second) {
-				aliases.insert(std::make_pair(index->second, index->first));
+		for (const auto & index : config.m_nameToCanonicalName) {
+			if (index.first != index.second) {
+				aliases.insert(std::make_pair(index.second, index.first));
 			}
 		}
 
@@ -1842,14 +1850,12 @@ operator<<(std::ostream& s, const Config& config)
 	// options section
 	s << "section: options" << std::endl;
 	const Config::ScreenOptions* options = config.getOptions("");
-	if (options != NULL && options->size() > 0) {
-		for (Config::ScreenOptions::const_iterator
-							option  = options->begin();
-							option != options->end(); ++option) {
-			const char* name = Config::getOptionName(option->first);
-			String value    = Config::getOptionValue(option->first,
-														option->second);
-			if (name != NULL && !value.empty()) {
+	if (options != nullptr && !options->empty()) {
+		for (auto option : *options) {
+			const char* name = Config::getOptionName(option.first);
+			String value    = Config::getOptionValue(option.first,
+														option.second);
+			if (name != nullptr && !value.empty()) {
 				s << "\t" << name << " = " << value << std::endl;
 			}
 		}
@@ -1906,7 +1912,7 @@ ConfigReadContext::readLine(String& line)
 		if (!line.empty()) {
 			// make sure there are no invalid characters
 			for (i = 0; i < line.length(); ++i) {
-				if (!isgraph(line[i]) && line[i] != ' ' && line[i] != '\t') {
+				if ((isgraph(line[i]) == 0) && line[i] != ' ' && line[i] != '\t') {
 					throw XConfigRead(*this,
 								"invalid character %{1}",
 								synergy::string::sprintf("%#2x", line[i]));
@@ -1956,7 +1962,7 @@ ConfigReadContext::parseInt(const String& arg) const
 		// invalid characters
 		throw XConfigRead(*this, "invalid integer argument \"%{1}\"", arg);
 	}
-	OptionValue value = static_cast<OptionValue>(tmp);
+	auto value = static_cast<OptionValue>(tmp);
 	if (value != tmp) {
 		// out of range
 		throw XConfigRead(*this, "integer argument \"%{1}\" out of range", arg);
@@ -1997,7 +2003,7 @@ ConfigReadContext::parseCorner(const String& arg) const
 	if (CaselessCmp::equal(arg, "left")) {
 		return kTopLeftMask | kBottomLeftMask;
 	}
-	else if (CaselessCmp::equal(arg, "right")) {
+	if (CaselessCmp::equal(arg, "right")) {
 		return kTopRightMask | kBottomRightMask;
 	}
 	else if (CaselessCmp::equal(arg, "top")) {
@@ -2080,7 +2086,7 @@ ConfigReadContext::parseCorners(const String& args) const
 Config::Interval
 ConfigReadContext::parseInterval(const ArgList& args) const
 {
-	if (args.size() == 0) {
+	if (args.empty()) {
 		return Config::Interval(0.0f, 1.0f);
 	}
 	if (args.size() != 2 || args[0].empty() || args[1].empty()) {
@@ -2088,11 +2094,11 @@ ConfigReadContext::parseInterval(const ArgList& args) const
 	}
 
 	char* end;
-	long startValue = strtol(args[0].c_str(), &end, 10);
+	double startValue = strtod(args[0].c_str(), &end);
 	if (end[0] != '\0') {
 		throw XConfigRead(*this, "invalid interval \"%{1}\"", concatArgs(args));
 	}
-	long endValue = strtol(args[1].c_str(), &end, 10);
+	double endValue = strtod(args[1].c_str(), &end);
 	if (end[0] != '\0') {
 		throw XConfigRead(*this, "invalid interval \"%{1}\"", concatArgs(args));
 	}
@@ -2209,7 +2215,6 @@ ConfigReadContext::parseNameWithArgs(
 	}
 
 	index = j;
-	return;
 }
 
 IPlatformScreen::KeyInfo*
@@ -2252,7 +2257,7 @@ ConfigReadContext::parseMouse(const String& mouse) const
 	}
 
 	char* end;
-	ButtonID button = (ButtonID)strtol(s.c_str(), &end, 10);
+	auto button = static_cast<ButtonID>(strtol(s.c_str(), &end, 10));
 	if (*end != '\0') {
 		throw XConfigRead(*this, "unable to parse button");
 	}
@@ -2315,13 +2320,13 @@ XConfigRead::XConfigRead(const ConfigReadContext& context,
 	// do nothing
 }
 
-XConfigRead::~XConfigRead() _NOEXCEPT
+XConfigRead::~XConfigRead() noexcept
 {
 	// do nothing
 }
 
 String
-XConfigRead::getWhat() const throw()
+XConfigRead::getWhat() const noexcept
 {
 	return format("XConfigRead", "read error: %{1}", m_error.c_str());
 }

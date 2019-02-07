@@ -1,6 +1,6 @@
 /*
  * synergy -- mouse and keyboard sharing utility
- * Copyright (C) 2013 Synergy Si Ltd.
+ * Copyright (C) 2013-2016 Symless Ltd.
  * 
  * This package is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -18,25 +18,25 @@
 #include "base/EventTypes.h"
 #include "base/IEventQueue.h"
 
-#include <assert.h>
-#include <stddef.h>
+#include <cassert>
+#include <cstddef>
 
 EventTypes::EventTypes() :
-	m_events(NULL)
+    m_events(nullptr)
 {
 }
 
 IEventQueue*
 EventTypes::getEvents() const
 {
-	assert(m_events != NULL);
-	return m_events;
+    assert(m_events != NULL);
+    return m_events;
 }
 
 void
 EventTypes::setEvents(IEventQueue* events)
 {
-	m_events = events;
+    m_events = events;
 }
 
 //
@@ -56,26 +56,6 @@ REGISTER_EVENT(IStream, outputFlushed)
 REGISTER_EVENT(IStream, outputError)
 REGISTER_EVENT(IStream, inputShutdown)
 REGISTER_EVENT(IStream, outputShutdown)
-
-//
-// IpcClient
-//
-
-REGISTER_EVENT(IpcClient, connected)
-REGISTER_EVENT(IpcClient, messageReceived)
-
-//
-// IpcClientProxy
-//
-
-REGISTER_EVENT(IpcClientProxy, messageReceived)
-REGISTER_EVENT(IpcClientProxy, disconnected)
-
-//
-// IpcServerProxy
-//
-
-REGISTER_EVENT(IpcServerProxy, messageReceived)
 
 //
 // IDataSocket
@@ -107,6 +87,7 @@ REGISTER_EVENT(OSXScreen, confirmSleep)
 // ClientListener
 //
 
+REGISTER_EVENT(ClientListener, accepted)
 REGISTER_EVENT(ClientListener, connected)
 
 //
@@ -176,13 +157,6 @@ REGISTER_EVENT(IScreen, error)
 REGISTER_EVENT(IScreen, shapeChanged)
 REGISTER_EVENT(IScreen, suspend)
 REGISTER_EVENT(IScreen, resume)
-
-//
-// IpcServer
-//
-
-REGISTER_EVENT(IpcServer, clientConnected)
-REGISTER_EVENT(IpcServer, messageReceived)
 
 //
 // Clipboard

@@ -1,6 +1,6 @@
 /*
  * synergy -- mouse and keyboard sharing utility
- * Copyright (C) 2012 Synergy Si Ltd.
+ * Copyright (C) 2012-2016 Symless Ltd.
  * Copyright (C) 2011 Nick Bolton
  * 
  * This package is free software; you can redistribute it and/or
@@ -40,7 +40,7 @@ class MSWindowsKeyStateTests : public ::testing::Test
 protected:
 	virtual void SetUp()
 	{
-		m_hook.loadLibrary();
+		m_hook.loadLibrary(TRUE);
 		m_screensaver = new MSWindowsScreenSaver();
 	}
 
@@ -52,7 +52,7 @@ protected:
 	MSWindowsDesks* newDesks(IEventQueue* eventQueue)
 	{
 		return new MSWindowsDesks(
-			true, false, m_hook.getInstance(), m_screensaver, eventQueue,
+            true, false, m_screensaver, eventQueue,
 			new TMethodJob<MSWindowsKeyStateTests>(
 				this, &MSWindowsKeyStateTests::updateKeysCB), false);
 	}
@@ -121,3 +121,24 @@ TEST_F(MSWindowsKeyStateTests, saveModifiers_noModifiers_savedModifiers0)
 	ASSERT_EQ(0, keyState.getSavedModifiers());
 	delete desks;
 }
+
+TEST_F(MSWindowsKeyStateTests, testKoreanLocale_inputModeKey_resultCorrectKeyID)
+{
+	NiceMock<MockEventQueue> eventQueue;
+	MSWindowsDesks* desks = newDesks(&eventQueue);
+	MockKeyMap keyMap;
+	MSWindowsKeyState keyState(desks, getEventTarget(), &eventQueue, keyMap);
+
+	keyState.setKeyLayout((HKL)0x00000412u);	// for ko-KR local ID
+	ASSERT_EQ(0xEF31, keyState.getKeyID(0x15u, 0x1f2u));	// VK_HANGUL from Hangul key
+	ASSERT_EQ(0xEF34, keyState.getKeyID(0x19u, 0x1f1u));	// VK_HANJA from Hanja key
+	ASSERT_EQ(0xEF31, keyState.getKeyID(0x15u, 0x11du));	// VK_HANGUL from R-Alt key
+	ASSERT_EQ(0xEF34, keyState.getKeyID(0x19u, 0x138u));	// VK_HANJA from R-Ctrl key
+
+	keyState.setKeyLayout((HKL)0x00000411); // for ja-jp locale ID
+	ASSERT_EQ(0xEF26, keyState.getKeyID(0x15u, 0x1du));	// VK_KANA
+	ASSERT_EQ(0xEF2A, keyState.getKeyID(0x19u, 0x38u));	// VK_KANJI
+
+	delete desks;
+}
+
